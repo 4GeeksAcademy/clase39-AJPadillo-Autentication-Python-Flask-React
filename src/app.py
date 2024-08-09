@@ -5,70 +5,164 @@ import os
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
+from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User, People, Planet
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+import os
 
-# from models import Person
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
-ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# database condiguration
+app.config["JWT_SECRET_KEY"] = "griffith"
+jwt = JWTManager(app)
+
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
-        "postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-MIGRATE = Migrate(app, db, compare_type=True)
+
+MIGRATE = Migrate(app, db)
 db.init_app(app)
-
-# add the admin
+CORS(app)
 setup_admin(app)
-
-# add the admin
-setup_commands(app)
-
-# Add all endpoints form the API with a "api" prefix
-app.register_blueprint(api, url_prefix='/api')
-
-# Handle/serialize errors like a JSON object
-
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-# generate sitemap with all your endpoints
-
-
 @app.route('/')
 def sitemap():
-    if ENV == "development":
-        return generate_sitemap(app)
-    return send_from_directory(static_file_dir, 'index.html')
+    return generate_sitemap(app)
 
-# any other endpoint will try to serve it like a static file
+@app.route('/people', methods=['GET'])
+def get_people():
+    people = People.query.all()
+    all_people = list(map(lambda x: x.serialize(), people))
+    return jsonify(all_people), 200
 
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_person(people_id):
+    person = People.query.get(people_id)
+    if not person:
+        return jsonify({"message": "Person not found"}), 404
+    return jsonify(person.serialize()), 200
 
-@app.route('/<path:path>', methods=['GET'])
-def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = 'index.html'
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0  # avoid cache memory
-    return response
+@app.route('/planets', methods=['GET'])
+def get_planets():
+    planets = Planet.query.all()
+    all_planets = list(map(lambda x: x.serialize(), planets))
+    return jsonify(all_planets), 200
 
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    planet = Planet.query.get(planet_id)
+    if not planet:
+        return jsonify({"message": "Planet not found"}), 404
+    return jsonify(planet.serialize()), 200
 
-# this only runs if `$ python src/main.py` is executed
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    all_users = list(map(lambda x: x.serialize(), users))
+    return jsonify(all_users), 200
+
+@app.route('/users/favorites', methods=['GET'])
+@jwt_required()
+def get_user_favorites():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    favorite_planets = list(map(lambda planet: planet.serialize(), user.favorite_planets))
+    favorite_people = list(map(lambda person: person.serialize(), user.favorite_people))
+    favorites = {
+        "favorite_planets": favorite_planets,
+        "favorite_people": favorite_people
+    }
+    return jsonify(favorites), 200
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+@jwt_required()
+def add_favorite_planet(planet_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    planet = Planet.query.get(planet_id)
+    if user and planet:
+        user.favorite_planets.append(planet)
+        db.session.commit()
+        return jsonify({"message": "Planet added to favorites"}), 200
+    return jsonify({"message": "User or Planet not found"}), 404
+
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+@jwt_required()
+def add_favorite_people(people_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    person = People.query.get(people_id)
+    if user and person:
+        user.favorite_people.append(person)
+        db.session.commit()
+        return jsonify({"message": "Person added to favorites"}), 200
+    return jsonify({"message": "User or Person not found"}), 404
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+@jwt_required()
+def remove_favorite_planet(planet_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    planet = Planet.query.get(planet_id)
+    if user and planet:
+        user.favorite_planets.remove(planet)
+        db.session.commit()
+        return jsonify({"message": "Planet removed from favorites"}), 200
+    return jsonify({"message": "User or Planet not found"}), 404
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+@jwt_required()
+def remove_favorite_people(people_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    person = People.query.get(people_id)
+    if user and person:
+        user.favorite_people.remove(person)
+        db.session.commit()
+        return jsonify({"message": "Person removed from favorites"}), 200
+    return jsonify({"message": "User or Person not found"}), 404
+
+@app.route("/login", methods=["POST"])
+def login():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    if email is None or password is None:
+        return jsonify({"msg": "Bad username or password"}), 401
+    user_query = User.query.filter_by(email=email)
+    user = user_query.first()
+    if user is None:
+        return jsonify({"msg": "Bad username or password"}), 401
+    if user.email != email or user.password != password:
+        return jsonify({"msg": "Bad username or password"}), 401
+    access_token = create_access_token(identity=user.id)
+    return jsonify(access_token=access_token)
+
+@app.route("/current-user", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    current_user_id = get_jwt_identity()
+    if current_user_id is None:
+        return jsonify({"msg": "User not found"}), 401
+    user_query = User.query.get(current_user_id)
+    if user_query is None:
+        return jsonify({"msg": "User not found"}), 401
+    user = user_query.serialize()
+    return jsonify(current_user=user), 200
+
 if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3001))
-    app.run(host='0.0.0.0', port=PORT, debug=True)
+    PORT = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=PORT, debug=False)
