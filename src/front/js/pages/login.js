@@ -10,16 +10,13 @@ export const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        // Llamar a la acción de login con los datos del formulario
         await actions.login(email, password);
-        // Verificar si el login fue exitoso y obtener el usuario actual
         if (store.token) {
             await actions.getCurrentUser();
-            console.log("login ok");
-            // Redirigir al usuario a la página de inicio
+            console.log("Login ok");
             navigate('/home');
         } else {
-            console.log("fallo al logearte(login.js)");
+            console.log("Fallo al logearte (login.js)");
         }
     };
 
