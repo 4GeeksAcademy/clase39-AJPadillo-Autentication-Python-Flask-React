@@ -89,6 +89,42 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
+			// Función para crear un nuevo usuario
+			createUser: async (email, password) => {
+				// Obtener la URL base para la API
+				const url = "https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/signup";
+				// Definir el objeto con las opciones de la solicitud fetch
+				const options = {
+					method: "POST", // Especifica que la solicitud es de tipo POST
+					headers: {
+						"Content-Type": "application/json", // Especifica que el contenido es JSON
+					},
+					body: JSON.stringify({
+						email: email, // Incluye el email en el cuerpo de la solicitud
+						password: password // Incluye la contraseña en el cuerpo de la solicitud
+					}),
+				};
+				try {
+					// Realiza la solicitud a la API usando fetch
+					const response = await fetch(url, options);
+					// Verifica si la respuesta es exitosa (código de estado 200-299)
+					if (response.ok) {
+						const data = await response.json(); // Parsear la respuesta como JSON
+						console.log("Usuario creado exitosamente:", data);
+						return true; // Retorna true si la creación fue exitosa
+					} else {
+						// Si la respuesta no es exitosa, lanza un error
+						const errorData = await response.json(); // Parsear la respuesta como JSON
+						console.error("Error al crear usuario:", errorData.message);
+						return false; // Retorna false si hubo un error
+					}
+				} catch (error) {
+					// Captura y muestra errores en la consola
+					console.error("Error al crear usuario:", error);
+					return false; // Retorna false si hubo un error durante la solicitud
+				}
+			},
+
 			getMessage: async () => {
 				try {
 					// fetching data from the backend

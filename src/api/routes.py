@@ -140,3 +140,11 @@ def get_current_user():
         return jsonify({"msg": "User not found"}), 401
     user = user_query.serialize()
     return jsonify(current_user=user), 200
+
+@api.route('/signup', methods=['POST'])
+def create_user():
+    data = request.json
+    new_user = User(email=data['email'], password=data['password'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"user": new_user.serialize()}), 200

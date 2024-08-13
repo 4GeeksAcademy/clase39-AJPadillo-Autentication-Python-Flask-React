@@ -14,7 +14,7 @@ export const Login = () => {
         if (store.token) {
             await actions.getCurrentUser();
             console.log("Login ok");
-            navigate('/home');
+            navigate('/');
         } else {
             console.log("Fallo al logearte (login.js)");
         }
@@ -22,6 +22,7 @@ export const Login = () => {
 
     return (
         <div className="container">
+            <p className="m-auto text-center display-1">Login</p>
             <form onSubmit={handleLogin}>
                 <div className="mb-3">
                     <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
