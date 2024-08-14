@@ -1,26 +1,31 @@
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
-import rigoImageUrl from "../../img/rigo-baby.jpg";
-import "../../styles/home.css";
+import { imageMapCharacters, imageMapPlanets, imageMapVehicles } from "../store/imagenesUrl";
+import { CharactersCard } from "../component/charactersCard";
+import { PlanetsCard } from "../component/planetsCard";
 
 export const Home = () => {
 	const { store, actions } = useContext(Context);
+	const navigate = useNavigate();
+
+	const handleCharacters = (item) => {
+		navigate('/infoCharacters', { state: item });
+	};
+	const handlePlanets = (item) => {
+		navigate('/infoPlanets', { state: item });
+	};
 
 	return (
-		<div className="text-center mt-5">
-			<h1>Hello Rigo!!</h1>
-			<p>
-				<img src={rigoImageUrl} />
-			</p>
-			<div className="alert alert-info">
-				{store.message || "Loading message from the backend (make sure your python backend is running)..."}
+		<>
+			<div className="container">
+				<h1 className="text-danger mb-4">Characters</h1>
+				<CharactersCard store={store} actions={actions} imageMapCharacters={imageMapCharacters} handleCharacters={handleCharacters} />
 			</div>
-			<p>
-				This boilerplate comes with lots of documentation:{" "}
-				<a href="https://start.4geeksacademy.com/starters/react-flask">
-					Read documentation
-				</a>
-			</p>
-		</div>
-	);
-};
+			<div className="container">
+				<h1 className="text-danger mb-4">Planets</h1>
+				<PlanetsCard store={store} actions={actions} imageMapPlanets={imageMapPlanets} handlePlanets={handlePlanets} />
+			</div>
+		</>
+	)
+}

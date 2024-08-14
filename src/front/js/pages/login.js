@@ -3,23 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 export const Login = () => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const { store, actions } = useContext(Context);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
+        // Sobreescribir el comportamiento "nativo" del formulario (refrescar la página)
         e.preventDefault();
-        await actions.login(email, password);
-        if (store.token) {
-            await actions.getCurrentUser();
-            console.log("Login ok");
-            navigate('/');
-        } else {
-            console.log("Fallo al logearte (login.js)");
+        // Realizar accion de submit
+        const logged = await actions.login(email, password);
+        if (logged) {
+            navigate("/");
         }
+        setEmail("");
+        setPassword("");
     };
-
     return (
         <div className="container">
             <p className="m-auto text-center display-1">Login</p>

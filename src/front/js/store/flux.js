@@ -4,127 +4,191 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: "",  // Mensaje que puede ser actualizado y mostrado en la interfaz
 			token: "",    // Token de autenticación, utilizado para identificar al usuario
-			user: "",     // Información del usuario actualmente autenticado
-			users: []     // Lista de usuarios en la aplicación
+			currentUser: null,  // Información del usuario actualmente autenticado
+			isLoggedIn: false,   // Indicador de si el usuario está autenticado
+			users: [],     // Lista de usuarios en la aplicación
+			personas: [],
+            planetas: [],
+            vehiculos: [],
+            favorites: []
 		},
 		// Acciones que pueden ser ejecutadas para cambiar el estado
 		actions: {
-			// Acción para obtener la lista de usuarios desde la API
-			getUsers: async () => {
-				// Obtiene el estado actual
-				const store = getStore();
-				try {
-					// Realiza una petición GET a la API para obtener los usuarios
-					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/users", {
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json"
-						}
-					});
-					if (response.status === 200) {  // Si la respuesta es exitosa
-						const data = await response.json();  // Convierte la respuesta a JSON
-						store.users = data; // Asigna los usuarios obtenidos al store
-						setStore(store); // Actualiza el store con la nueva lista de usuarios
-						console.log(store.users);  // Muestra los usuarios en la consola
-					} else {
-						console.log("Fallo al hacer fetch getUsers(flux.js)");  // Muestra un error si la petición falla
-					}
-				} catch (error) {
-					console.log("Fallo al hacer fetch getUsers (flux.js):", error);  // Muestra el error en caso de excepción
-				}
-			},
-
 			// Acción para hacer login en la aplicación
 			login: async (email, password) => {
 				try {
-					// Realiza una petición POST a la API para autenticar al usuario
 					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/login", {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json"
 						},
-						body: JSON.stringify({ email: email, password: password })  // Envia email y contraseña en el cuerpo de la solicitud
+						body: JSON.stringify({ email, password }) // Envía el email y el password como un objeto JSON en el cuerpo de la solicitud
 					});
-					if (response.status === 200) {  // Si la autenticación es exitosa
-						const data = await response.json();  // Convierte la respuesta a JSON
-						const store = getStore();  // Obtiene el estado actual
-						store.token = data.access_token; // Guarda el token de acceso en el store
-						setStore(store); // Actualiza el store con el nuevo token
-						console.log("Login successful");  // Muestra un mensaje de éxito en la consola
-						console.log("Token:", data.access_token);  // Muestra el token en la consola
-					} else {
-						console.log("Login erroneo: Email or password invalidos");  // Muestra un error si las credenciales son incorrectas
+					if (response.status === 200) { // Verifica si la respuesta de la API fue exitosa (código 200)
+						const data = await response.json(); // Convierte la respuesta en formato JSON
+						const accessToken = data.access_token;
+						if (accessToken) {
+							localStorage.setItem("accessToken", accessToken); // Guarda el token recibido en el localStorage del navegador
+							await getActions().getCurrentUser(); // Obtiene la información del usuario actual
+							console.log("Login successful"); // Mensaje de éxito en la consola
+							console.log("Token:", data.access_token); // Muestra el token en la consola
+							return true;
+						}
+						return false;
 					}
 				} catch (error) {
-					console.error("Error al logear (flux.js):", error);  // Muestra un error en caso de excepción
+					console.error("Error al logear (flux.js):", error); // Captura y muestra cualquier error que ocurra durante el proceso
 				}
 			},
 
 			// Acción para obtener los datos del usuario actualmente autenticado
 			getCurrentUser: async () => {
-				const store = getStore();  // Obtiene el estado actual
-				const token = localStorage.getItem("token");  // Intenta obtener el token desde el almacenamiento local
-				if (token !== null) {  // Si el token existe
-					try {
-						// Realiza una petición GET a la API para obtener la información del usuario
-						const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/current-user", {
-							method: "GET",
-							headers: {
-								"Content-Type": "application/json",
-								Authorization: "Bearer " + token  // Incluye el token en la cabecera de autorización
-							}
-						});
-						if (response.status === 200) {  // Si la respuesta es exitosa
-							const data = await response.json();  // Convierte la respuesta a JSON
-							store.user = data.current_user; // Guarda los datos del usuario en el store
-							setStore(store); // Actualiza el store con la nueva información del usuario
-						} else {
-							console.error("Error al hacer fetch al usuario actual");  // Muestra un error si la petición falla
+				try {
+					// Obtener el token de acceso desde el localStorage
+					const accessToken = localStorage.getItem("accessToken");
+					// Realizar la solicitud GET a la API usando fetch
+					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/current-user", {
+						method: "GET", // Método de la solicitud
+						headers: {
+							// Incluir el token en los encabezados de la solicitud para la autenticación
+							Authorization: `Bearer ${accessToken}`,
+							"Content-Type": "application/json" // Especificar el tipo de contenido como JSON
 						}
-					} catch (error) {
-						console.error("Error al hacer fetch al usuario actual:", error);  // Muestra un error en caso de excepción
+					});
+					// Verificar si la respuesta fue exitosa
+					if (response.ok) {
+						const data = await response.json(); // Parsear la respuesta como JSON
+						const currentUser = data.current_user; // Extraer el usuario actual de la respuesta
+						setStore({ currentUser, isLoggedIn: true }); // Actualizar el store con el usuario actual y marcar como logueado
+					} else {
+						throw new Error("Failed to fetch current user"); // Manejo de errores si la respuesta no fue exitosa
 					}
-				} else {
-					console.log("Falta el token");  // Muestra un mensaje si el token no está presente
+				} catch (error) {
+					console.log("Error loading message from backend", error); // Mostrar el error en la consola
+					localStorage.removeItem("accessToken"); // Remover el token de acceso si hay un error
+					setStore({
+						currentUser: null, // Establecer el usuario actual como nulo en el store
+						isLoggedIn: false, // Marcar como no logueado
+					});
 				}
 			},
 
 			// Función para crear un nuevo usuario
 			createUser: async (email, password) => {
-				// Obtener la URL base para la API
-				const url = "https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/signup";
-				// Definir el objeto con las opciones de la solicitud fetch
-				const options = {
-					method: "POST", // Especifica que la solicitud es de tipo POST
-					headers: {
-						"Content-Type": "application/json", // Especifica que el contenido es JSON
-					},
-					body: JSON.stringify({
-						email: email, // Incluye el email en el cuerpo de la solicitud
-						password: password // Incluye la contraseña en el cuerpo de la solicitud
-					}),
-				};
 				try {
-					// Realiza la solicitud a la API usando fetch
-					const response = await fetch(url, options);
-					// Verifica si la respuesta es exitosa (código de estado 200-299)
-					if (response.ok) {
-						const data = await response.json(); // Parsear la respuesta como JSON
-						console.log("Usuario creado exitosamente:", data);
+					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/signup", {
+						method: "POST", // Especifica que la solicitud es de tipo POST
+						headers: {
+							"Content-Type": "application/json", // Especifica que el contenido es JSON
+						},
+						body: JSON.stringify({
+							email, // Incluye el email en el cuerpo de la solicitud
+							password // Incluye la contraseña en el cuerpo de la solicitud
+						}),
+					});
+					if (response.status === 200) { // Verifica si la respuesta es exitosa
+						const data = await response.json(); // Transformar la respuesta como JSON
+						console.log("Usuario creado:", data);
 						return true; // Retorna true si la creación fue exitosa
 					} else {
 						// Si la respuesta no es exitosa, lanza un error
-						const errorData = await response.json(); // Parsear la respuesta como JSON
+						const errorData = await response.json(); // Transformar la respuesta como JSON
 						console.error("Error al crear usuario:", errorData.message);
 						return false; // Retorna false si hubo un error
 					}
 				} catch (error) {
-					// Captura y muestra errores en la consola
-					console.error("Error al crear usuario:", error);
+					console.error("Error al crear usuario:", error); // Captura y muestra errores en la consola
 					return false; // Retorna false si hubo un error durante la solicitud
 				}
 			},
 
+			// Acción para cerrar sesión
+			logout: () => {
+				localStorage.removeItem("accessToken"); // Elimina el token del localStorage
+				setStore({
+					currentUser: null, // Establece el usuario actual como nulo en el store
+					isLoggedIn: false, // Marcar como no logueado
+				});
+			},
+
+			getCharacters: async () => {
+                try {
+                    const response = await fetch("https://www.swapi.tech/api/people/");
+                    const data = await response.json();
+                    const personas = await Promise.all(data.results.map(async (character) => {
+                        const details = await getActions().getCharactersInfo(character.uid);
+                        const { properties, ...basicInfo } = details;
+                        return {
+                            ...properties,
+                            ...basicInfo,
+                        }
+                    }));
+                    setStore({ personas: personas });
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+
+            getCharactersInfo: async (id) => {
+                try {
+                    const response = await fetch(`https://www.swapi.tech/api/people/${id}`);
+                    const data = await response.json();
+                    return data.result;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+
+            getPlanets: async () => {
+                try {
+                    const response = await fetch("https://www.swapi.tech/api/planets/");
+                    const data = await response.json();
+                    const planetas = await Promise.all(data.results.map(async (planet) => {
+                        const details = await getActions().getPlanetsInfo(planet.uid);
+                        const { properties, ...basicInfo } = details;
+                        return {
+                            ...properties,
+                            ...basicInfo,
+                        }
+                    }));
+                    setStore({ planetas: planetas });
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+
+            getPlanetsInfo: async (id) => {
+                try {
+                    const response = await fetch(`https://www.swapi.tech/api/planets/${id}`);
+                    const data = await response.json();
+                    return data.result;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+
+			toggleFavorites: (customUid, name) => {
+                const store = getStore();
+                const found = store.favorites.find((element) => element.uid === customUid);
+                if (!found) {
+                    setStore({ favorites: [...store.favorites, { uid: customUid, name }] });
+                } else {
+                    getActions().removeFavorites(customUid);
+                }
+            },
+
+            removeFavorites: (customUid) => {
+                const store = getStore();
+                setStore({ favorites: store.favorites.filter(element => element.uid !== customUid) });
+            },
+
+            isFavorite: (uid) => {
+                const favorites = getStore().favorites;
+                return favorites.some(favorite => favorite.uid === uid);
+            },
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Acción para obtener un mensaje desde el backend
 			getMessage: async () => {
 				try {
 					// fetching data from the backend
@@ -136,27 +200,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.log("Error loading message from backend", error)
 				}
-			},
-
-			// Use getActions to call a function within a fuction
-			// exampleFunction: () => {
-			// 	getActions().changeColor(0, "green");
-			// },
-
-			// changeColor: (index, color) => {
-			// 	//get the store
-			// 	const store = getStore();
-
-			// 	//we have to loop the entire demo array to look for the respective index
-			// 	//and change its color
-			// 	const demo = store.demo.map((elm, i) => {
-			// 		if (i === index) elm.background = color;
-			// 		return elm;
-			// 	});
-
-			// 	//reset the global store
-			// 	setStore({ demo: demo });
-			// }
+			}
 		}
 	};
 };
