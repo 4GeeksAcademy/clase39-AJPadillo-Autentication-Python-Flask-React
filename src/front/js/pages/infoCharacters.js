@@ -30,16 +30,12 @@ export const InfoCharacters = () => {
                     <p>{item.name}</p>
                 </div>
                 <div className="col-md-2">
-                    <p>Hair color:</p>
-                    <p>{item.hair_color}</p>
-                </div>
-                <div className="col-md-2">
                     <p>Height:</p>
                     <p>{item.height}</p>
                 </div>
                 <div className="col-md-2">
-                    <p>Gender:</p>
-                    <p>{item.gender}</p>
+                    <p>Birth year:</p>
+                    <p>{item.birth_year}</p>
                 </div>
                 <div className="col-md-2">
                     <p>Eye color:</p>

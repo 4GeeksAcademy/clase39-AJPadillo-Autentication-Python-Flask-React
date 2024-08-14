@@ -28,7 +28,6 @@ const injectContext = PassedComponent => {
 			 * you should do your ajax requests or fetch api requests here. Do not use setState() to save data in the
 			 * store, instead use actions, like this:
 			 **/
-			state.actions.getMessage(); // <---- calling this function from the flux.js actions
 			state.actions.getCharacters();
 			state.actions.getPlanets();
 			const accessToken = localStorage.getItem("accessToken");
@@ -37,6 +36,7 @@ const injectContext = PassedComponent => {
 			console.log(`withToken: ${withToken}`);
 			if (withToken) {
 				state.actions.getCurrentUser();
+				state.actions.getUserFavorites();  // Cargar los favoritos del usuario al iniciar sesión
 			}
 		}, []);
 

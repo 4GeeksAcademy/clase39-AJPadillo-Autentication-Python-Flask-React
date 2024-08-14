@@ -9,12 +9,12 @@ export const CharactersCard = ({ store, actions, imageMapCharacters, handleChara
                         <img src={imageMapCharacters[item.name]} className="card-img-top" alt="..." />
                         <div className="card-body">
                             <h5 className="card-title">{item.name}</h5>
-                            <p className="card-text">Gender: {item.gender}</p>
+                            <p className="card-text">Height: {item.height}</p>
                             <p className="card-text">Birth Year: {item.birth_year}</p>
                             <p className="card-text">Eye color: {item.eye_color}</p>
                             <div className="d-flex justify-content-around">
                                 <button onClick={() => handleCharacters(item)} className="btn btn-primary">Learn more!</button>
-                                <button onClick={() => actions.toggleFavorites(`character-${item.uid}`, item.name)} className="btn btn-warning">{actions.isFavorite(`character-${item.uid}`) ? '❤️' : '🖤'}</button>
+                                <button onClick={() => actions.toggleFavorites(`character-${item.id}`, item.name)} className="btn btn-warning">{actions.isFavorite(`character-${item.id}`) ? '❤️' : '🖤'}</button>
                             </div>
                         </div>
                     </div>

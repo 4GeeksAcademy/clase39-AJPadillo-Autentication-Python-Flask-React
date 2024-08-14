@@ -1,18 +1,15 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
-		// Estado inicial de la aplicación (store)
 		store: {
-			message: "",  // Mensaje que puede ser actualizado y mostrado en la interfaz
-			token: "",    // Token de autenticación, utilizado para identificar al usuario
-			currentUser: null,  // Información del usuario actualmente autenticado
-			isLoggedIn: false,   // Indicador de si el usuario está autenticado
-			users: [],     // Lista de usuarios en la aplicación
+			message: "",
+			token: "",
+			currentUser: null,
+			isLoggedIn: false,
+			users: [],
 			personas: [],
-            planetas: [],
-            vehiculos: [],
-            favorites: []
+			planetas: [],
+			favorites: []
 		},
-		// Acciones que pueden ser ejecutadas para cambiar el estado
 		actions: {
 			// Acción para hacer login en la aplicación
 			login: async (email, password) => {
@@ -111,96 +108,157 @@ const getState = ({ getStore, getActions, setStore }) => {
 				});
 			},
 
+			// Obtener personajes desde la API personalizada
 			getCharacters: async () => {
-                try {
-                    const response = await fetch("https://www.swapi.tech/api/people/");
-                    const data = await response.json();
-                    const personas = await Promise.all(data.results.map(async (character) => {
-                        const details = await getActions().getCharactersInfo(character.uid);
-                        const { properties, ...basicInfo } = details;
-                        return {
-                            ...properties,
-                            ...basicInfo,
-                        }
-                    }));
-                    setStore({ personas: personas });
-                } catch (error) {
-                    console.log(error);
-                }
-            },
-
-            getCharactersInfo: async (id) => {
-                try {
-                    const response = await fetch(`https://www.swapi.tech/api/people/${id}`);
-                    const data = await response.json();
-                    return data.result;
-                } catch (error) {
-                    console.log(error);
-                }
-            },
-
-            getPlanets: async () => {
-                try {
-                    const response = await fetch("https://www.swapi.tech/api/planets/");
-                    const data = await response.json();
-                    const planetas = await Promise.all(data.results.map(async (planet) => {
-                        const details = await getActions().getPlanetsInfo(planet.uid);
-                        const { properties, ...basicInfo } = details;
-                        return {
-                            ...properties,
-                            ...basicInfo,
-                        }
-                    }));
-                    setStore({ planetas: planetas });
-                } catch (error) {
-                    console.log(error);
-                }
-            },
-
-            getPlanetsInfo: async (id) => {
-                try {
-                    const response = await fetch(`https://www.swapi.tech/api/planets/${id}`);
-                    const data = await response.json();
-                    return data.result;
-                } catch (error) {
-                    console.log(error);
-                }
-            },
-
-			toggleFavorites: (customUid, name) => {
-                const store = getStore();
-                const found = store.favorites.find((element) => element.uid === customUid);
-                if (!found) {
-                    setStore({ favorites: [...store.favorites, { uid: customUid, name }] });
-                } else {
-                    getActions().removeFavorites(customUid);
-                }
-            },
-
-            removeFavorites: (customUid) => {
-                const store = getStore();
-                setStore({ favorites: store.favorites.filter(element => element.uid !== customUid) });
-            },
-
-            isFavorite: (uid) => {
-                const favorites = getStore().favorites;
-                return favorites.some(favorite => favorite.uid === uid);
-            },
-			
-			////////////////////////////////////////////////////////////////////////////////////////////////////////
-			// Acción para obtener un mensaje desde el backend
-			getMessage: async () => {
 				try {
-					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
-					const data = await resp.json()
-					setStore({ message: data.message })
-					// don't forget to return something, that is how the async resolves
-					return data;
+					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/people", {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					});
+					if (response.ok) {
+						const data = await response.json();
+						setStore({ personas: data }); // Guarda la lista de personajes en el store
+					} else {
+						console.error("Error fetching characters");
+					}
 				} catch (error) {
-					console.log("Error loading message from backend", error)
+					console.error("Error fetching characters:", error);
 				}
-			}
+			},
+
+			// Obtener detalles de un personaje específico
+			getCharactersInfo: async (id) => {
+				try {
+					const response = await fetch(`https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/people/${id}`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					});
+					if (response.ok) {
+						const data = await response.json();
+						return data.result; // Devuelve los detalles del personaje
+					} else {
+						console.error("Error fetching character info");
+					}
+				} catch (error) {
+					console.error("Error fetching character info:", error);
+				}
+			},
+
+			// Obtener planetas desde la API personalizada
+			getPlanets: async () => {
+				try {
+					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/planets", {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					});
+					if (response.ok) {
+						const data = await response.json();
+						setStore({ planetas: data }); // Guarda la lista de planetas en el store
+					} else {
+						console.error("Error fetching planets");
+					}
+				} catch (error) {
+					console.error("Error fetching planets:", error);
+				}
+			},
+
+			// Obtener detalles de un planeta específico
+			getPlanetsInfo: async (id) => {
+				try {
+					const response = await fetch(`https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/planets/${id}`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json"
+						}
+					});
+					if (response.ok) {
+						const data = await response.json();
+						return data.result; // Devuelve los detalles del planeta
+					} else {
+						console.error("Error fetching planet info");
+					}
+				} catch (error) {
+					console.error("Error fetching planet info:", error);
+				}
+			},
+			////////////////////////////////////// TOOGLE ESTA DANDO ERROR AL POSTEAR FAVORITOS /////////////////////////////////////
+			// Acción para agregar o eliminar favoritos, ajustada para la API personalizada
+			toggleFavorites: async (id, name, type) => {
+				const store = getStore();
+				const isFavorite = store.favorites.some((element) => element.id === id);
+				const accessToken = localStorage.getItem("accessToken");
+
+				// Verificar si el usuario está autenticado antes de realizar la solicitud
+				if (!accessToken) {
+					console.error("User is not authenticated");
+					return;
+				}
+				// Construir la URL dependiendo de si es un favorito existente o nuevo
+				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${id}`;
+				const method = isFavorite ? "DELETE" : "POST";
+				try {
+					const response = await fetch(url, {
+						method,
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${accessToken}`,
+						},
+					});
+					if (response.ok) {
+						await getActions().getUserFavorites();
+						console.log(`Favorite ${isFavorite ? 'removed' : 'added'} successfully`);
+					} else {
+						console.error("Error updating favorites");
+					}
+				} catch (error) {
+					console.error("Error updating favorites:", error);
+				}
+			},
+
+			getUserFavorites: async () => {
+				const accessToken = localStorage.getItem("accessToken");
+				if (!accessToken) {
+					console.error("User is not authenticated");
+					return;
+				}
+				try {
+					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/users/favorites", {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${accessToken}`,
+						},
+					});
+					if (response.ok) {
+						const data = await response.json();
+						const favorites = [
+							...data.favorite_planets.map(planet => ({ id: planet.id, name: planet.name, type: "planet" })),
+							...data.favorite_people.map(person => ({ id: person.id, name: person.name, type: "people" }))
+						];
+						setStore({ favorites });
+					} else {
+						console.error("Error fetching user favorites");
+					}
+				} catch (error) {
+					console.error("Error fetching user favorites:", error);
+				}
+			},
+
+            removeFavorites: (id) => {
+                const store = getStore();
+                setStore({ favorites: store.favorites.filter(element => element.id !== id) });
+            },
+
+            isFavorite: (id) => {
+				const favorites = getStore().favorites;
+				return favorites.some(favorite => favorite.id === id);
+			},
 		}
 	};
 };
