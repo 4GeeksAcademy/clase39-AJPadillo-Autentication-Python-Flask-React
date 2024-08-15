@@ -12,11 +12,9 @@ CORS(api)
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
-
     response_body = {
         "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
     }
-
     return jsonify(response_body), 200
 
 @api.route('/people', methods=['GET'])
@@ -166,3 +164,14 @@ def create_user():
     db.session.commit()
     # Devuelve los datos del nuevo usuario como respuesta JSON
     return jsonify({"user": new_user.serialize()}), 200
+
+# COMPLETAR RUTA
+@api.route('/api/favorite/<string:name>/<int:id>', methods=['POST', 'DELETE'])
+@jwt_required()
+def handle_favorite(name, id):
+    user_id = get_jwt_identity()  # Obtener el ID del usuario autenticado
+    # Buscar el usuario
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Usuario no encontrado"}), 404
+    

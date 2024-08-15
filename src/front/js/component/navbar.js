@@ -1,27 +1,29 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 export const Navbar = () => {
-    // Accede al store y actions desde el contexto global
     const { store, actions } = useContext(Context);
+    const navigate = useNavigate();
 
+    // Manejar logout
     const handleLogout = () => {
         actions.logout();
+        navigate("/");
     };
 
     return (
-        <nav className="navbar navbar-light bg-light">
+        <nav className="navbar navbar-light bg-light mb-3">
             <div className="container">
                 <Link to="/">
                     <span className="navbar-brand mb-0 h1"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSz1oxYa16QkYbSAjstrwIqAeIOoRjZuIM4ow&s" style={{ width: "150px" }} /></span>
                 </Link>
-                <div className="ml-auto">
-                    {/* Mostrar botón de favoritos solo si el usuario está autenticado */}
+                <div className="ml-auto d-flex">
+                    {/* Menú desplegable de favoritos solo visible si el usuario está autenticado */}
                     {store.isLoggedIn && (
                         <div className="dropdown">
                             <button
-                                className="btn btn-primary dropdown-toggle"
+                                className="btn btn-outline-primary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton"
                                 data-bs-toggle="dropdown"
@@ -33,7 +35,10 @@ export const Navbar = () => {
                                 {store.favorites.length > 0 ? (
                                     store.favorites.map((item, index) => (
                                         <li key={index}>
-                                            <button className="dropdown-item" onClick={() => actions.toggleFavorites(item.uid, item.name)}>
+                                            <button
+                                                className="dropdown-item"
+                                                onClick={() => actions.toggleFavorites(item.id, item.name)}
+                                            >
                                                 {item.name}
                                             </button>
                                         </li>

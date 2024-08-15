@@ -53,7 +53,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						}
 					});
 					// Verificar si la respuesta fue exitosa
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json(); // Parsear la respuesta como JSON
 						const currentUser = data.current_user; // Extraer el usuario actual de la respuesta
 						setStore({ currentUser, isLoggedIn: true }); // Actualizar el store con el usuario actual y marcar como logueado
@@ -117,7 +117,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json"
 						}
 					});
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json();
 						setStore({ personas: data }); // Guarda la lista de personajes en el store
 					} else {
@@ -137,7 +137,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json"
 						}
 					});
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json();
 						return data.result; // Devuelve los detalles del personaje
 					} else {
@@ -157,7 +157,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json"
 						}
 					});
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json();
 						setStore({ planetas: data }); // Guarda la lista de planetas en el store
 					} else {
@@ -177,7 +177,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json"
 						}
 					});
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json();
 						return data.result; // Devuelve los detalles del planeta
 					} else {
@@ -188,36 +188,27 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 			////////////////////////////////////// TOOGLE ESTA DANDO ERROR AL POSTEAR FAVORITOS /////////////////////////////////////
-			// Acción para agregar o eliminar favoritos, ajustada para la API personalizada
-			toggleFavorites: async (id, name, type) => {
+			// Acción para agregar o eliminar favoritos
+			toggleFavorites: async (id, name) => {
 				const store = getStore();
-				const isFavorite = store.favorites.some((element) => element.id === id);
-				const accessToken = localStorage.getItem("accessToken");
-
-				// Verificar si el usuario está autenticado antes de realizar la solicitud
-				if (!accessToken) {
-					console.error("User is not authenticated");
-					return;
-				}
-				// Construir la URL dependiendo de si es un favorito existente o nuevo
-				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${id}`;
-				const method = isFavorite ? "DELETE" : "POST";
+				const options = {
+					method: store.favorites.some(fav => fav.id === id) ? "DELETE" : "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${store.token}`, // Enviar el JWT en los headers
+					},
+				};
+				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${name}/${id}`;
 				try {
-					const response = await fetch(url, {
-						method,
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${accessToken}`,
-						},
-					});
-					if (response.ok) {
-						await getActions().getUserFavorites();
-						console.log(`Favorite ${isFavorite ? 'removed' : 'added'} successfully`);
+					const response = await fetch(url, options);
+					if (response.status === 200) {
+						const updatedFavorites = await response.json();
+						setStore({ favorites: updatedFavorites });
 					} else {
-						console.error("Error updating favorites");
+						console.error("Error al actualizar favoritos (flux.js):", response.status);
 					}
 				} catch (error) {
-					console.error("Error updating favorites:", error);
+					console.error("Error en la solicitud:", error);
 				}
 			},
 
@@ -235,7 +226,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							Authorization: `Bearer ${accessToken}`,
 						},
 					});
-					if (response.ok) {
+					if (response.status === 200) {
 						const data = await response.json();
 						const favorites = [
 							...data.favorite_planets.map(planet => ({ id: planet.id, name: planet.name, type: "planet" })),
@@ -250,12 +241,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-            removeFavorites: (id) => {
-                const store = getStore();
-                setStore({ favorites: store.favorites.filter(element => element.id !== id) });
-            },
+			removeFavorites: (id) => {
+				const store = getStore();
+				setStore({ favorites: store.favorites.filter(element => element.id !== id) });
+			},
 
-            isFavorite: (id) => {
+			isFavorite: (id) => {
 				const favorites = getStore().favorites;
 				return favorites.some(favorite => favorite.id === id);
 			},
