@@ -1,6 +1,6 @@
 import React from "react";
 
-export const CharactersCard = ({ store, actions, imageMapCharacters, handleCharacters }) => {
+export const CharactersCard = ({ store, actions, imageMapCharacters }) => {
     return (
         <div className="row d-flex flex-nowrap flex-row overflow-scroll overflow-y-hidden">
             {store.personas.map((item, index) =>
@@ -14,7 +14,9 @@ export const CharactersCard = ({ store, actions, imageMapCharacters, handleChara
                             <p className="card-text">Eye color: {item.eye_color}</p>
                             <div className="d-flex justify-content-around">
                                 <button onClick={() => handleCharacters(item)} className="btn btn-primary">Learn more!</button>
-                                <button onClick={() => actions.toggleFavorites(item.id, item.name, "people")} className="btn btn-warning">{actions.isFavorite(`people-${item.id}`) ? '❤️' : '🖤'}</button>
+                                <button onClick={() => actions.toggleFavorites(item.id, "people")} className="btn btn-warning">
+                                    {actions.isFavorite(item.id) ? '❤️' : '🖤'}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -22,4 +24,5 @@ export const CharactersCard = ({ store, actions, imageMapCharacters, handleChara
             )}
         </div>
     );
-}
+};
+

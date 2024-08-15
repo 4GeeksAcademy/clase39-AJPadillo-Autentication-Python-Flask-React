@@ -48,7 +48,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "GET", // Método de la solicitud
 						headers: {
 							// Incluir el token en los encabezados de la solicitud para la autenticación
-							Authorization: `Bearer ${accessToken}`,
+							Authorization: `Bearer ${accessToken}`, // Enviar el JWT en los headers
 							"Content-Type": "application/json" // Especificar el tipo de contenido como JSON
 						}
 					});
@@ -56,7 +56,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					if (response.status === 200) {
 						const data = await response.json(); // Parsear la respuesta como JSON
 						console.log(data);
-						
+
 						const currentUser = data.current_user; // Extraer el usuario actual de la respuesta
 						setStore({ currentUser, isLoggedIn: true }); // Actualizar el store con el usuario actual y marcar como logueado
 					} else {
@@ -191,18 +191,25 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			////////////////////////////////////// TOOGLE ESTA DANDO ERROR AL POSTEAR FAVORITOS - ¿TYPE UNDEFINED? /////////////////////////////////////
 			// Acción para agregar o eliminar favoritos
-			toggleFavorites: async (id, name, type) => {
-				const store = getStore();
-				const options = {
-					method: store.favorites.some(fav => fav.id === id) ? "DELETE" : "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${store.token}`, // Enviar el JWT en los headers
-					},
-				};
-				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${name}/${id}`;
+			toggleFavorites: async (id, type) => {
 				try {
+					const accessToken = localStorage.getItem("accessToken");
+					const store = getStore();
+					const favorites = store.favorites || []; // Asegúrate de que favorites sea un array
+			
+					const isFavorite = favorites.some(fav => fav.id === id && fav.type === type);
+			
+					const options = {
+						method: isFavorite ? "DELETE" : "POST",
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							"Content-Type": "application/json"
+						},
+					};
+			
+					const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${id}`;
 					const response = await fetch(url, options);
+			
 					if (response.status === 200) {
 						const updatedFavorites = await response.json();
 						setStore({ favorites: updatedFavorites });
@@ -212,8 +219,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error("Error en la solicitud:", error);
 				}
-			},
+			},			
 
+			// Función para obtener los favoritos del usuario
 			getUserFavorites: async () => {
 				const accessToken = localStorage.getItem("accessToken");
 				if (!accessToken) {
@@ -249,7 +257,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			isFavorite: (id) => {
-				const favorites = getStore().favorites;
+				const favorites = getStore().favorites || [];
 				return favorites.some(favorite => favorite.id === id);
 			},
 		}
