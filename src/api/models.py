@@ -69,3 +69,20 @@ class Planet(db.Model):
             "climate": self.climate,
             "population": self.population,
         }
+
+
+# class Favorites(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+#     people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
+#     planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=False)
+#     db.UniqueConstraint('user_id', 'people_id', 'planet_id', name='unique_favorite')  #Evitar duplicados
+
+#     def serialize(self):
+#         return {
+#             "id": self.id,
+#             "user_id": self.user_id,
+#             "people_id": self.people_id,
+#             "planet_id": self.planet_id
+#         }
+   

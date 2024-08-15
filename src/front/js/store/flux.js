@@ -55,6 +55,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					// Verificar si la respuesta fue exitosa
 					if (response.status === 200) {
 						const data = await response.json(); // Parsear la respuesta como JSON
+						console.log(data);
+						
 						const currentUser = data.current_user; // Extraer el usuario actual de la respuesta
 						setStore({ currentUser, isLoggedIn: true }); // Actualizar el store con el usuario actual y marcar como logueado
 					} else {
@@ -187,9 +189,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching planet info:", error);
 				}
 			},
-			////////////////////////////////////// TOOGLE ESTA DANDO ERROR AL POSTEAR FAVORITOS /////////////////////////////////////
+			////////////////////////////////////// TOOGLE ESTA DANDO ERROR AL POSTEAR FAVORITOS - ¿TYPE UNDEFINED? /////////////////////////////////////
 			// Acción para agregar o eliminar favoritos
-			toggleFavorites: async (id, name) => {
+			toggleFavorites: async (id, name, type) => {
 				const store = getStore();
 				const options = {
 					method: store.favorites.some(fav => fav.id === id) ? "DELETE" : "POST",
@@ -198,7 +200,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						Authorization: `Bearer ${store.token}`, // Enviar el JWT en los headers
 					},
 				};
-				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${name}/${id}`;
+				const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${name}/${id}`;
 				try {
 					const response = await fetch(url, options);
 					if (response.status === 200) {

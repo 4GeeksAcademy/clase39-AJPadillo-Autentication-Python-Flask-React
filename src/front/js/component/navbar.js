@@ -31,20 +31,16 @@ export const Navbar = () => {
                             >
                                 Favoritos
                             </button>
-                            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                {store.favorites.length > 0 ? (
-                                    store.favorites.map((item, index) => (
-                                        <li key={index}>
-                                            <button
-                                                className="dropdown-item"
-                                                onClick={() => actions.toggleFavorites(item.id, item.name)}
-                                            >
-                                                {item.name}
-                                            </button>
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li><span className="dropdown-item">No tienes favoritos</span></li>
+                            <ul className="dropdown-menu">
+                                {store.favorites.length > 0 ? (store.favorites.map((item, index) => (
+                                    <li className="dropdown-item d-flex justify-content-between align-items-center" key={index}>{item.name}<span
+                                        className="delete-btn btn btn-sm fs-3"
+                                        onClick={() => actions.removeFavorites(item.id)}
+                                    >
+                                        &times;
+                                    </span></li>
+                                ))) : (
+                                    <li className="dropdown-item">Empty</li>
                                 )}
                             </ul>
                         </div>

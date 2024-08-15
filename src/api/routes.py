@@ -166,12 +166,34 @@ def create_user():
     return jsonify({"user": new_user.serialize()}), 200
 
 # COMPLETAR RUTA
-@api.route('/api/favorite/<string:name>/<int:id>', methods=['POST', 'DELETE'])
+@api.route('/api/favorite/<string:name>/<string:type>/<int:id>', methods=['POST', 'DELETE'])
 @jwt_required()
-def handle_favorite(name, id):
+def handle_favorite(name, type, id):
     user_id = get_jwt_identity()  # Obtener el ID del usuario autenticado
-    # Buscar el usuario
+    # Busca al usuario en la base de datos usando su id
     user = User.query.get(user_id)
     if not user:
         return jsonify({"msg": "Usuario no encontrado"}), 404
     
+    favorite_query = None
+    if type == "people":
+        item = People.query.get(id)
+        favorite_query = user.favorite_people.query.filter_by(user_id=user.id, item_id=id)
+    elif type == "planet":
+        item = Planet.query.get(id)
+        favorite_query = user.favorite_planets.query.filter_by(user_id=user.id, item_id=id)
+    else:
+        return jsonify({"msg": "Tipo de elemento no válido"}), 400
+    if not item:
+        return jsonify({"msg": "Elemento no encontrado"}), 404
+    
+    if request.method == "POST":
+        favorite = favorite_query.first()
+        db.session.add(favorite)
+        db.session.commit()
+        return jsonify({"msg": "Favorito agregado exitosamente"}), 201
+    elif request.method == "DELETE":
+        favorite = favorite_query.first()
+        db.session.remove(favorite)
+        db.session.commit()
+        return jsonify({"msg": "Favorito eliminado exitosamente"}), 200
