@@ -14,9 +14,7 @@ export const CharactersCard = ({ store, actions, imageMapCharacters }) => {
                             <p className="card-text">Eye color: {item.eye_color}</p>
                             <div className="d-flex justify-content-around">
                                 <button onClick={() => handleCharacters(item)} className="btn btn-primary">Learn more!</button>
-                                <button onClick={() => actions.toggleFavorites(item.id, "people")} className="btn btn-warning">
-                                    {actions.isFavorite(item.id) ? '❤️' : '🖤'}
-                                </button>
+                                <button onClick={() => actions.toggleFavorites(item.id, "people")} className="btn btn-warning">{actions.isFavorite(item.id, "people") ? '❤️' : '🖤'}</button>
                             </div>
                         </div>
                     </div>

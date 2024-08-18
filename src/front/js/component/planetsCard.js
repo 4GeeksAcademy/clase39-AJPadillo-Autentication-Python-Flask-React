@@ -12,9 +12,8 @@ export const PlanetsCard = ({ store, actions, imageMapPlanets, handlePlanets }) 
                             <p className="card-text">Population: {item.population}</p>
                             <p className="card-text">Climate: {item.climate}</p>
                             <div className="d-flex justify-content-around">
-                                <button onClick={() => handleCharacters(item)} className="btn btn-primary">Learn more!</button>
-                                <button onClick={() => actions.toggleFavorites(item.id, "planets")} className="btn btn-warning">
-                                    {actions.isFavorite(item.id) ? '❤️' : '🖤'}
+                                <button onClick={() => handlePlanets(item)} className="btn btn-primary">Learn more!</button>
+                                <button onClick={() => actions.toggleFavorites(item.id, "planet")} className="btn btn-warning">{actions.isFavorite(item.id, "planet") ? '❤️' : '🖤'}
                                 </button>
                             </div>
                         </div>

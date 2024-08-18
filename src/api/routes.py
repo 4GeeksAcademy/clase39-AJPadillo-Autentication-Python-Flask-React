@@ -64,54 +64,6 @@ def get_user_favorites():
     }
     return jsonify(favorites), 200
 
-@api.route('/favorite/planet/<int:planet_id>', methods=['POST'])
-@jwt_required()
-def add_favorite_planet(planet_id):
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    planet = Planet.query.get(planet_id)
-    if user and planet:
-        user.favorite_planets.append(planet)
-        db.session.commit()
-        return jsonify({"message": "Planet added to favorites"}), 200
-    return jsonify({"message": "User or Planet not found"}), 404
-
-@api.route('/favorite/people/<int:people_id>', methods=['POST'])
-@jwt_required()
-def add_favorite_people(people_id):
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    person = People.query.get(people_id)
-    if user and person:
-        user.favorite_people.append(person)
-        db.session.commit()
-        return jsonify({"message": "Person added to favorites"}), 200
-    return jsonify({"message": "User or Person not found"}), 404
-
-@api.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
-@jwt_required()
-def remove_favorite_planet(planet_id):
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    planet = Planet.query.get(planet_id)
-    if user and planet:
-        user.favorite_planets.remove(planet)
-        db.session.commit()
-        return jsonify({"message": "Planet removed from favorites"}), 200
-    return jsonify({"message": "User or Planet not found"}), 404
-
-@api.route('/favorite/people/<int:people_id>', methods=['DELETE'])
-@jwt_required()
-def remove_favorite_people(people_id):
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    person = People.query.get(people_id)
-    if user and person:
-        user.favorite_people.remove(person)
-        db.session.commit()
-        return jsonify({"message": "Person removed from favorites"}), 200
-    return jsonify({"message": "User or Person not found"}), 404
-
 @api.route("/login", methods=["POST"])
 def login():
     # Obtiene el email y password del cuerpo de la solicitud JSON. Si no se proporcionan, se establece como None.
@@ -165,10 +117,10 @@ def create_user():
     # Devuelve los datos del nuevo usuario como respuesta JSON
     return jsonify({"user": new_user.serialize()}), 200
 
-# COMPLETAR RUTA
-@api.route('/api/favorite/<string:type>/<int:id>', methods=['POST', 'DELETE'])
+
+@api.route('/favorite/<string:type>/<int:id>', methods=['POST', 'DELETE'])
 @jwt_required()
-def handle_favorite(name, type, id):
+def handle_favorite(type, id):
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:

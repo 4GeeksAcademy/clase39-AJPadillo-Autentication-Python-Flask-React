@@ -195,35 +195,36 @@ const getState = ({ getStore, getActions, setStore }) => {
 				try {
 					const accessToken = localStorage.getItem("accessToken");
 					const store = getStore();
-					const favorites = store.favorites || []; // Asegúrate de que favorites sea un array
-			
+					const favorites = store.favorites || [];
+					console.log("Favorites:", favorites, Array.isArray(favorites)); // Depurar favorites para ver si es array
 					const isFavorite = favorites.some(fav => fav.id === id && fav.type === type);
-			
 					const options = {
 						method: isFavorite ? "DELETE" : "POST",
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
-							"Content-Type": "application/json"
+							"Content-Type": "application/json",
 						},
 					};
-			
 					const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${id}`;
 					const response = await fetch(url, options);
-			
-					if (response.status === 200) {
+
+					if (response.ok) {
+						// Actualiza la lista de favoritos con la respuesta del backend
 						const updatedFavorites = await response.json();
-						setStore({ favorites: updatedFavorites });
+						setStore({ favorites: updatedFavorites }); // Actualiza el estado global con los nuevos favoritos
 					} else {
 						console.error("Error al actualizar favoritos (flux.js):", response.status);
 					}
 				} catch (error) {
 					console.error("Error en la solicitud:", error);
-				}
-			},			
+				};
+			},
 
 			// Función para obtener los favoritos del usuario
 			getUserFavorites: async () => {
 				const accessToken = localStorage.getItem("accessToken");
+				const store = getStore();
+				setStore({ favorites: store.favorites})
 				if (!accessToken) {
 					console.error("User is not authenticated");
 					return;
@@ -256,9 +257,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 				setStore({ favorites: store.favorites.filter(element => element.id !== id) });
 			},
 
-			isFavorite: (id) => {
-				const favorites = getStore().favorites || [];
-				return favorites.some(favorite => favorite.id === id);
+			isFavorite: (id, type) => {
+				const store = getStore();
+				const favorites = store.favorites || [];
+				return favorites.some(favorite => favorite.id === id && favorite.type === type);
 			},
 		}
 	};

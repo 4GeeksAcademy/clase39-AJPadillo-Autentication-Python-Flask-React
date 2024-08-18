@@ -4,7 +4,6 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 
 import { Home } from "./pages/home";
-import { Demo } from "./pages/demo";
 import { Single } from "./pages/single";
 import injectContext from "./store/appContext";
 
@@ -13,10 +12,10 @@ import { Footer } from "./component/footer";
 
 import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
-import { Protected } from "./pages/protected";
 
 import { InfoCharacters } from "./pages/infoCharacters";
 import { InfoPlanets } from "./pages/infoPlanets";
+import { FavoritesCard } from "./pages/favoritesCard";
 
 //create your first component
 const Layout = () => {
@@ -36,7 +35,7 @@ const Layout = () => {
                         <Route element={<Login />} path="/login" />
                         <Route element={<InfoCharacters />} path="/infoCharacters" />
                         <Route element={<InfoPlanets />} path="/infoPlanets" />
-                        <Route element={<Protected />} path="/protected" />
+                        <Route element={<FavoritesCard />} path="/favoritesCard" />
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<h1>Not found!</h1>} />
