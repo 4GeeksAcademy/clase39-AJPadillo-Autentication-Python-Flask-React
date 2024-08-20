@@ -8,6 +8,7 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
     const navigate = useNavigate();
 
     const withSession = !!store?.isLoggedIn;
+    console.log(store.favorites);
 
     // Redirige a /login si el usuario no está autenticado
     useEffect(() => {
@@ -21,7 +22,7 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
     }
     // Verifica que store.personas y store.planets estén definidos y sean arrays
     const personas = store.personas || [];
-    const planets = store.planets || [];
+    const planetas = store.planetas || [];
 
     // Renderiza los favoritos en función del tipo (personas o planetas)
     const renderFavorites = () => {
@@ -60,7 +61,7 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
 
     // Renderiza una tarjeta para un planeta
     const renderPlanet = (item, index) => {
-        const planet = planets.find(p => p.id === item.id);
+        const planet = planetas.find(p => p.id === item.id);
         return planet ? (
             <div className="col-md-3" key={index}>
                 <div className="card" style={{ height: "100%" }}>
