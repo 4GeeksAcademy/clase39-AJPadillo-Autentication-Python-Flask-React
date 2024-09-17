@@ -5,13 +5,15 @@ db = SQLAlchemy()
 favorite_planets = db.Table(
     'favorite_planets',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('planet_id', db.Integer, db.ForeignKey('planet.id'), primary_key=True)
+    db.Column('planet_id', db.Integer, db.ForeignKey('planet.id'), primary_key=True),
+    db.UniqueConstraint('user_id', 'planet_id', name='unique_user_planet_favorite')
 )
 
 favorite_people = db.Table(
     'favorite_people',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('people_id', db.Integer, db.ForeignKey('people.id'), primary_key=True)
+    db.Column('people_id', db.Integer, db.ForeignKey('people.id'), primary_key=True),
+    db.UniqueConstraint('user_id', 'people_id', name='unique_user_people_favorite')
 )
 
 class User(db.Model):
@@ -30,6 +32,8 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             "is_active": self.is_active,
+            "favorite_planets": [planet.serialize() for planet in self.favorite_planets],
+            "favorite_people": [person.serialize() for person in self.favorite_people]
         }
 
 class People(db.Model):
@@ -69,20 +73,3 @@ class Planet(db.Model):
             "climate": self.climate,
             "population": self.population,
         }
-
-
-# class Favorites(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-#     people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
-#     planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=False)
-#     db.UniqueConstraint('user_id', 'people_id', 'planet_id', name='unique_favorite')  #Evitar duplicados
-
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "user_id": self.user_id,
-#             "people_id": self.people_id,
-#             "planet_id": self.planet_id
-#         }
-   

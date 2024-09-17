@@ -36,7 +36,7 @@ const injectContext = PassedComponent => {
 			console.log(`withToken: ${withToken}`);
 			if (withToken) {
 				state.actions.getCurrentUser();
-				state.actions.getUserFavorites();  // Cargar los favoritos del usuario al iniciar sesión
+				state.actions.getUserFavorites();
 			}
 		}, []);
 

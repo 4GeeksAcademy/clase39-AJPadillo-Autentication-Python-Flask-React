@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
-import { imageMapCharacters, imageMapPlanets, imageMapVehicles } from "../store/imagenesUrl";
+import { imageMapCharacters, imageMapPlanets } from "../store/imagenesUrl";
 import { CharactersCard } from "../component/charactersCard";
 import { PlanetsCard } from "../component/planetsCard";
 

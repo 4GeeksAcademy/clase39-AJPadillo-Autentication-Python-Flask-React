@@ -10,21 +10,17 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
     const withSession = !!store?.isLoggedIn;
     console.log(store.favorites);
 
-    // Redirige a /login si el usuario no está autenticado
     useEffect(() => {
         if (!withSession) {
             navigate("/login");
         }
     }, [withSession, navigate]);
-    // Verifica que store.favorites esté definido y sea un array
     if (!store.favorites || !Array.isArray(store.favorites)) {
-        return <div>No favorites available.</div>; // Mensaje cuando no hay favoritos
+        return <div>No favorites available.</div>;
     }
-    // Verifica que store.personas y store.planets estén definidos y sean arrays
     const personas = store.personas || [];
     const planetas = store.planetas || [];
 
-    // Renderiza los favoritos en función del tipo (personas o planetas)
     const renderFavorites = () => {
         return store.favorites.map((item, index) => {
             if (item.type === "people") {
@@ -35,7 +31,7 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
             return null;
         });
     };
-    // Renderiza una tarjeta para un personaje
+
     const renderPerson = (item, index) => {
         const person = personas.find(p => p.id === item.id);
         return person ? (
@@ -59,7 +55,6 @@ export const FavoritesCard = ({ imageMapCharacters, imageMapPlanets, handlePlane
         ) : null;
     };
 
-    // Renderiza una tarjeta para un planeta
     const renderPlanet = (item, index) => {
         const planet = planetas.find(p => p.id === item.id);
         return planet ? (
