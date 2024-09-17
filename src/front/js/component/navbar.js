@@ -13,7 +13,7 @@ export const Navbar = () => {
     };
 
     const handleProfileRedirect = () => {
-        navigate("/favoritesCard");
+        navigate("/private");
     };
 
     return (
