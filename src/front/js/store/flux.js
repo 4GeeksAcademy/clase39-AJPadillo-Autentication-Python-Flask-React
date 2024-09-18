@@ -11,7 +11,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			favorites: []
 		},
 		actions: {
-			// Acción para hacer login en la aplicación
 			login: async (email, password) => {
 				try {
 					const response = await fetch("https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/login", {
@@ -113,7 +112,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Obtener detalles de un personaje específico
 			getCharactersInfo: async (id) => {
 				try {
 					const response = await fetch(`https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/people/${id}`, {
@@ -146,7 +144,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Obtener detalles de un planeta específico
 			getPlanetsInfo: async (id) => {
 				try {
 					const response = await fetch(`https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/planets/${id}`, {
@@ -163,13 +160,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Acción para agregar o eliminar favoritos
 			toggleFavorites: async (id, type) => {
 				try {
 					const accessToken = localStorage.getItem("accessToken");
 					if (!accessToken) throw new Error("Usuario no autenticado");
+			
 					const store = getStore();
-					const favorites = store.favorites || [];
+					const favorites = Array.isArray(store.favorites) ? store.favorites : [];
 					const isFavorite = favorites.some(fav => fav.id === id && fav.type === type);
 					const options = {
 						method: isFavorite ? "DELETE" : "POST",
@@ -180,11 +177,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					};
 					const url = `https://miniature-space-journey-q59965r6xrwcxjrx-3001.app.github.dev/api/favorite/${type}/${id}`;
 					const response = await fetch(url, options);
-
+			
 					if (!response.ok) throw new Error("Error al actualizar favoritos");
-
-					const updatedFavorites = await response.json();
-					setStore({ favorites: updatedFavorites });
+			
+					await getActions().getUserFavorites();
 				} catch (error) {
 					console.error("Error en la solicitud de favoritos:", error);
 				}
@@ -204,15 +200,16 @@ const getState = ({ getStore, getActions, setStore }) => {
 							Authorization: `Bearer ${accessToken}`
 						}
 					});
-
+			
 					if (!response.ok) throw new Error("Error fetching user favorites");
-
+			
 					const data = await response.json();
 					const favorites = [
 						...data.favorite_planets.map(planet => ({ id: planet.id, name: planet.name, type: "planet" })),
 						...data.favorite_people.map(person => ({ id: person.id, name: person.name, type: "people" }))
 					];
-					setStore({ favorites });
+			
+					setStore({ favorites: Array.isArray(favorites) ? favorites : [] });
 				} catch (error) {
 					console.error("Error fetching user favorites:", error);
 				}
@@ -225,9 +222,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			isFavorite: (id, type) => {
 				const store = getStore();
-				const favorites = store.favorites || [];
-				console.log(favorites);
-				
+				const favorites = Array.isArray(store.favorites) ? store.favorites : [];
 				return favorites.some(favorite => favorite.id === id && favorite.type === type);
 			},
 		}

@@ -1,6 +1,6 @@
 import React from "react";
 
-export const PlanetsCard = ({ store, actions, imageMapPlanets, handlePlanets }) => {
+export const PlanetsCard = ({ store, actions, imageMapPlanets }) => {
     return (
         <div className="row d-flex flex-nowrap flex-row overflow-scroll overflow-y-hidden">
             {store.planetas.map((item, index) =>
@@ -13,8 +13,7 @@ export const PlanetsCard = ({ store, actions, imageMapPlanets, handlePlanets }) 
                             <p className="card-text">Climate: {item.climate}</p>
                             <div className="d-flex justify-content-around">
                                 <button onClick={() => handlePlanets(item)} className="btn btn-primary">Learn more!</button>
-                                <button onClick={() => actions.toggleFavorites(item.id, "planet")} className="btn btn-warning">{actions.isFavorite(item.id, "planet") ? '❤️' : '🖤'}
-                                </button>
+                                <button onClick={() => actions.toggleFavorites(item.id, "planet")} className="btn btn-warning">{actions.isFavorite(item.id, "planet") ? '❤️' : '🖤'}</button>
                             </div>
                         </div>
                     </div>
@@ -22,4 +21,4 @@ export const PlanetsCard = ({ store, actions, imageMapPlanets, handlePlanets }) 
             )}
         </div>
     );
-}
+};

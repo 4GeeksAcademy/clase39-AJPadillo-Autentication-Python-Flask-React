@@ -23,4 +23,3 @@ export const CharactersCard = ({ store, actions, imageMapCharacters }) => {
         </div>
     );
 };
-
